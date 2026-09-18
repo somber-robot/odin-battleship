@@ -235,9 +235,9 @@ export class LogicHandler {
             if (col + len - 1 != 9) board.receiveAttack(row, col + len);
           } else {
             if (row != 0) board.receiveAttack(row - 1, col);
-            if (row + len - 1 != 9) board.receiveAttack(row + 1, col);
+            if (row + len - 1 != 9) board.receiveAttack(row + len, col);
           }
-          break;
+          return;
         }
       }
     }
