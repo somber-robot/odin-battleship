@@ -193,6 +193,15 @@ export class LogicHandler {
     return placements;
   };
 
+  canAttack = (board, row, col) => {
+    const value = board.getValue(row, col);
+    if (!Array.isArray(value)) {
+      return value === null;
+    }
+    const ship = this.getShipByID(value[0]);
+    return !ship.getBody()[value[1]];
+  };
+
   receiveAttack = (board, row, col) => {
     const feedback = board.receiveAttack(row, col);
     if (!Array.isArray(feedback)) return;
@@ -223,7 +232,7 @@ export class LogicHandler {
 
           if (H) {
             if (col != 0) board.receiveAttack(row, col - 1);
-            if (col + len - 1 != 9) board.receiveAttack(row, col + 1);
+            if (col + len - 1 != 9) board.receiveAttack(row, col + len);
           } else {
             if (row != 0) board.receiveAttack(row - 1, col);
             if (row + len - 1 != 9) board.receiveAttack(row + 1, col);
