@@ -58,3 +58,15 @@ h1 {
   width: 30px;
   height: 30px;
 }
+
+.tile.hit {
+  background-color: lightgreen;
+}
+
+.tile.ship {
+  background-color: lightcoral;
+}
+
+.tile.ship.hit {
+  background-color: red;
+}

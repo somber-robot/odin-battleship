@@ -140,6 +140,11 @@ export class LogicHandler {
     this.cpuBoard = Gameboard();
   }
 
+  populatePlayerBoard = () => {
+    this.clearBoard(this.playerBoard);
+    this.placeShips(this.playerBoard, this.generateShipPlacements());
+  };
+
   createShip = (len) => {
     const ship = Ship(len);
     return ship;
@@ -152,7 +157,7 @@ export class LogicHandler {
 
     let board = Gameboard();
 
-    for (let len = 5; len >= 1; len--) {
+    for (const len of [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]) {
       let orientation = ["V", "H"][Math.round(Math.random())];
       if (len === 5)
         if (orientations.every((o) => o === "H")) orientation = "V";
