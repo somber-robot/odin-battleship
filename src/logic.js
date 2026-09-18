@@ -140,9 +140,9 @@ export class LogicHandler {
     this.cpuBoard = Gameboard();
   }
 
-  populatePlayerBoard = () => {
-    this.clearBoard(this.playerBoard);
-    this.placeShips(this.playerBoard, this.generateShipPlacements());
+  populateBoard = (board) => {
+    this.clearBoard(board);
+    this.placeShips(board, this.generateShipPlacements());
   };
 
   createShip = (len) => {
