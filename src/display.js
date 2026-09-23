@@ -90,10 +90,11 @@ export function loadPage(logic) {
       );
       tile.classList.add("hover");
       setTimeout(() => {
+        tile.classList.remove("hover");
+        if (game.innerText !== "Cancel Game") return;
+
         const feedback = logic.receiveAttack(logic.playerBoard, row, col);
         updateBoardUI("player");
-
-        tile.classList.remove("hover");
 
         if (feedback === -1) {
           gameActive = true;
@@ -196,6 +197,14 @@ export function loadPage(logic) {
       gameActive = false;
       message.innerText = "Click start to play!";
       clearGrid("player", true);
+      for (let row = 0; row < 10; row++) {
+        for (let col = 0; col < 10; col++) {
+          const tile = document.querySelector(
+            `.grid.player .tile.row-${row}.col-${col}`,
+          );
+          tile.classList.remove("hover");
+        }
+      }
     }
   });
 
