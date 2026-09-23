@@ -45,6 +45,7 @@ export function loadPage(logic) {
         updateBoardUI("cpu");
         const value = logic.cpuBoard.getValue(row, col);
         if (!Array.isArray(value)) {
+          playerGrid.classList.remove("dull");
           gameActive = false;
           cpuTurn();
           return;
@@ -52,10 +53,13 @@ export function loadPage(logic) {
 
         //check for win
         if (!logic.allSunk(logic.cpuBoard)) return;
-        message.innerText = "You win!";
+        playerGrid.classList.remove("dull");
+        message.innerText = "YOU WIN!";
+        message.classList.add("win");
         gameActive = false;
         game.innerText = "New Game";
         randomize.disabled = false;
+        cpuGrid.classList.add("dull");
       });
 
       cpuGrid.append(tile);
@@ -63,7 +67,10 @@ export function loadPage(logic) {
   }
 
   const cpuTurn = () => {
-    message.innerText = "CPU's turn";
+    message.innerText = "Cpu's turn";
+    message.classList.remove("win", "lose");
+
+    cpuGrid.classList.add("dull");
 
     const findPosition = () => {
       let row = Math.trunc(Math.random() * 9),
@@ -73,7 +80,7 @@ export function loadPage(logic) {
         row = Math.trunc(Math.random() * 9);
         col = Math.trunc(Math.random() * 9);
         attempts++;
-        if (attempts <= 10000) continue;
+        if (attempts <= 30000) continue;
         for (let r = 0; r < 10; r++) {
           for (let c = 0; c < 10; c++) {
             if (!logic.canAttack(logic.playerBoard, r, c)) continue;
@@ -91,7 +98,10 @@ export function loadPage(logic) {
       tile.classList.add("hover");
       setTimeout(() => {
         tile.classList.remove("hover");
-        if (game.innerText !== "Cancel Game") return;
+        if (game.innerText !== "Cancel Game") {
+          cpuGrid.classList.remove("dull");
+          return;
+        }
 
         const feedback = logic.receiveAttack(logic.playerBoard, row, col);
         updateBoardUI("player");
@@ -99,19 +109,25 @@ export function loadPage(logic) {
         if (feedback === -1) {
           gameActive = true;
           message.innerText = "Your turn...";
+          message.classList.remove("win", "lose");
           const hovered = document.elementFromPoint(mx, my);
           const tile = hovered?.closest(".cpu .tile");
           if (tile && !tile.classList.contains("hit"))
             tile.classList.add("hover");
+          cpuGrid.classList.remove("dull");
+          playerGrid.classList.add("dull");
           return;
         }
 
         if (logic.allSunk(logic.playerBoard)) {
           // cpu wins
-          message.innerText = "You lose!";
+          message.innerText = "YOU LOSE!";
+          message.classList.add("lose");
           game.innerText = "New Game";
           randomize.disabled = false;
           gameActive = false;
+          cpuGrid.classList.remove("dull");
+          playerGrid.classList.add("dull");
           return;
         }
 
@@ -179,6 +195,9 @@ export function loadPage(logic) {
     randomGrid("player");
     clearGrid("cpu");
     message.innerText = "Click start to play!";
+    game.innerText = "Start Game";
+    playerGrid.classList.remove("dull");
+    message.classList.remove("win", "lose");
   });
 
   const game = document.querySelector("button.game");
@@ -190,6 +209,7 @@ export function loadPage(logic) {
       randomize.disabled = true;
       gameActive = true;
       message.innerText = "Your turn...";
+      playerGrid.classList.add("dull");
     } else if (game.innerText === "Cancel Game") {
       clearGrid("cpu");
       game.innerText = "Start Game";
@@ -205,9 +225,13 @@ export function loadPage(logic) {
           tile.classList.remove("hover");
         }
       }
+      playerGrid.classList.remove("dull");
     }
+    message.classList.remove("win", "lose");
+    cpuGrid.classList.remove("dull");
   });
 
   // start up
+  cpuGrid.classList.add("dull");
   randomGrid("player");
 }

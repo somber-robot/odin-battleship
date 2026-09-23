@@ -16,65 +16,148 @@ h1 {
 }
 
 .container {
-  width: 40rem;
+  width: 42rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  padding: 1rem;
+  border-radius: 1.5rem;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
 .title {
-  background-color: lightcoral;
   text-align: center;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  margin-bottom: 1rem;
 }
 
 .menu {
-  background-color: blanchedalmond;
   display: flex;
-  gap: 1rem;
   justify-content: center;
+  gap: 0.3rem;
+  margin-bottom: 0.6rem;
+}
+
+.menu button {
+  background: transparent;
+  border: none;
+  text-decoration: underline;
+  text-underline-offset: 0.1rem;
+}
+
+.menu button:hover:enabled {
+  cursor: pointer;
+  opacity: 60%;
 }
 
 .grids {
-  background-color: rgba(127, 255, 212, 0.408);
   display: flex;
   gap: 1rem;
   justify-content: center;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-size: 0.9rem;
 }
 
 .tiles {
-  background-color: bisque;
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   width: 300px;
+  box-shadow:
+    rgb(114, 124, 132) 2px 2px 6px 0px inset,
+    rgba(255, 255, 255, 0.5) -3px -3px 6px 1px inset;
+  border-radius: 15px;
+}
+
+.dull {
+  opacity: 30%;
 }
 
 .label {
-  background-color: violet;
   text-align: center;
 }
 
 .tile {
-  border: 1px solid cadetblue;
+  border-left: 1.5px solid black;
+  border-top: 1.5px solid black;
   width: 30px;
   height: 30px;
 }
 
-.tile.hit {
-  background-color: lightgreen;
+.tile.row-9 {
+  border-bottom: 1.5px solid black;
 }
 
-.tile.ship {
-  background-color: lightcoral;
+.tile.col-9 {
+  border-right: 1.5px solid black;
+}
+
+.tile.row-0.col-0 {
+  border-top-left-radius: 10px;
+}
+
+.tile.row-0.col-9 {
+  border-top-right-radius: 10px;
+}
+
+.tile.row-9.col-0 {
+  border-bottom-left-radius: 10px;
+}
+
+.tile.row-9.col-9 {
+  border-bottom-right-radius: 10px;
+}
+
+.tile.hit {
+  background-color: rgb(203, 255, 203);
+}
+
+.player .tile.ship {
+  background-color: rgb(174, 251, 255);
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.534) 1.95px 1.95px 2.6px;
 }
 
 .tile.ship.hit {
+  box-shadow: rgba(0, 0, 0, 0.577) 0px 2px 4px 0px inset;
   background-color: red;
 }
 
 .tile.hover {
-  border: 2px solid black;
+  border-left: 3px solid black;
+  border-top: 3px solid black;
+  border-right: 1.5px solid black;
+  border-bottom: 1.5px solid black;
+  background-color: rgb(255, 175, 175);
+}
+
+.tile.col-9.hover,
+.ship.col-9.hover {
+  border-right: 3px solid black;
+}
+
+.tile.row-9.hover,
+.ship.row-9.hover {
+  border-bottom: 3px solid black;
+}
+
+.player .ship.hover {
+  border-left: 3px solid black;
+  border-top: 3px solid black;
+  border-right: 1.5px solid black;
+  border-bottom: 1.5px solid black;
+  background-color: rgb(206, 224, 228);
 }
 
 .message {
   text-align: center;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-size: 1.3rem;
+  padding-top: 1rem;
+}
+
+.win {
+  color: rgb(255, 180, 5);
+}
+
+.lose {
+  color: rgb(235, 18, 18);
 }
