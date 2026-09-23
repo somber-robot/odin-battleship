@@ -1,5 +1,15 @@
 export function loadPage(logic) {
+  let mx = 0,
+    my = 0;
+
+  document.addEventListener("mousemove", (e) => {
+    mx = e.clientX;
+    my = e.clientY;
+  });
+
   let gameActive = false;
+
+  const message = document.querySelector(".message");
 
   // create tile grids
   const playerGrid = document.querySelector(".grid.player .tiles");
@@ -17,29 +27,118 @@ export function loadPage(logic) {
       const tile = document.createElement("div");
       tile.classList.add("tile", `row-${row}`, `col-${col}`);
 
+      // hover functionality
+      tile.addEventListener("mouseenter", () => {
+        if (!gameActive || !logic.canAttack(logic.cpuBoard, row, col)) return;
+        tile.classList.add("hover");
+      });
+
+      tile.addEventListener("mouseleave", () => {
+        tile.classList.remove("hover");
+      });
+
       // game functionality
       tile.addEventListener("click", () => {
         if (!gameActive || !logic.canAttack(logic.cpuBoard, row, col)) return;
+        tile.classList.remove("hover");
         logic.receiveAttack(logic.cpuBoard, row, col);
+        updateBoardUI("cpu");
         const value = logic.cpuBoard.getValue(row, col);
         if (!Array.isArray(value)) {
           gameActive = false;
-          // handle cpu turn
+          cpuTurn();
+          return;
         }
-        upgradeBoardUI("cpu");
+
+        //check for win
+        if (!logic.allSunk(logic.cpuBoard)) return;
+        message.innerText = "You win!";
+        gameActive = false;
+        game.innerText = "New Game";
+        randomize.disabled = false;
       });
 
       cpuGrid.append(tile);
     }
   }
 
-  const randomGrid = (boardName) => {
-    const board = boardName == "player" ? logic.playerBoard : logic.cpuBoard;
-    logic.populateBoard(board);
-    upgradeBoardUI(boardName);
+  const cpuTurn = () => {
+    message.innerText = "CPU's turn";
+
+    const findPosition = () => {
+      let row = Math.trunc(Math.random() * 9),
+        col = Math.trunc(Math.random() * 9),
+        attempts = 0;
+      while (!logic.canAttack(logic.playerBoard, row, col)) {
+        row = Math.trunc(Math.random() * 9);
+        col = Math.trunc(Math.random() * 9);
+        attempts++;
+        if (attempts <= 10000) continue;
+        for (let r = 0; r < 10; r++) {
+          for (let c = 0; c < 10; c++) {
+            if (!logic.canAttack(logic.playerBoard, r, c)) continue;
+            return [r, c];
+          }
+        }
+      }
+      return [row, col];
+    };
+
+    const playPosition = (row, col) => {
+      const tile = document.querySelector(
+        `.grid.player .tile.row-${row}.col-${col}`,
+      );
+      tile.classList.add("hover");
+      setTimeout(() => {
+        const feedback = logic.receiveAttack(logic.playerBoard, row, col);
+        updateBoardUI("player");
+
+        tile.classList.remove("hover");
+
+        if (feedback === -1) {
+          gameActive = true;
+          message.innerText = "Your turn...";
+          const hovered = document.elementFromPoint(mx, my);
+          const tile = hovered?.closest(".cpu .tile");
+          if (tile && !tile.classList.contains("hit"))
+            tile.classList.add("hover");
+          return;
+        }
+
+        if (logic.allSunk(logic.playerBoard)) {
+          // cpu wins
+          message.innerText = "You lose!";
+          game.innerText = "New Game";
+          randomize.disabled = false;
+          gameActive = false;
+          return;
+        }
+
+        const surrounding = logic.getSurroundingTiles(
+          logic.playerBoard,
+          row,
+          col,
+        );
+
+        if (!surrounding.length) [row, col] = findPosition();
+        else
+          [row, col] =
+            surrounding[Math.trunc(Math.random() * surrounding.length)];
+        playPosition(row, col);
+      }, 1000);
+    };
+
+    playPosition(...findPosition());
   };
 
-  const upgradeBoardUI = (boardName) => {
+  const randomGrid = (boardName) => {
+    clearGrid(boardName);
+    const board = boardName == "player" ? logic.playerBoard : logic.cpuBoard;
+    logic.populateBoard(board);
+    updateBoardUI(boardName);
+  };
+
+  const updateBoardUI = (boardName) => {
     const board = boardName == "player" ? logic.playerBoard : logic.cpuBoard;
     for (let row = 0; row < 10; row++) {
       for (let col = 0; col < 10; col++) {
@@ -60,35 +159,43 @@ export function loadPage(logic) {
     }
   };
 
-  const clearGrid = (boardName) => {
+  const clearGrid = (boardName, keepShips = false) => {
+    const board = boardName == "player" ? logic.playerBoard : logic.cpuBoard;
+    logic.clearBoard(board, keepShips);
     for (let row = 0; row < 10; row++) {
       for (let col = 0; col < 10; col++) {
         const tile = document.querySelector(
           `.grid.${boardName} .tile.row-${row}.col-${col}`,
         );
-        tile.classList.remove("ship", "hit");
+        tile.classList.remove("hit");
+        if (!keepShips) tile.classList.remove("ship");
       }
     }
   };
 
   const randomize = document.querySelector("button.randomize");
   randomize.addEventListener("click", () => {
-    clearGrid("player");
     randomGrid("player");
+    clearGrid("cpu");
+    message.innerText = "Click start to play!";
   });
 
   const game = document.querySelector("button.game");
   game.addEventListener("click", () => {
-    if (game.innerText === "Start Game") {
+    if (game.innerText === "Start Game" || game.innerText === "New Game") {
+      clearGrid("player", true);
       randomGrid("cpu");
       game.innerText = "Cancel Game";
       randomize.disabled = true;
       gameActive = true;
+      message.innerText = "Your turn...";
     } else if (game.innerText === "Cancel Game") {
       clearGrid("cpu");
       game.innerText = "Start Game";
       randomize.disabled = false;
       gameActive = false;
+      message.innerText = "Click start to play!";
+      clearGrid("player", true);
     }
   });
 

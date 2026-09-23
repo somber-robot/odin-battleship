@@ -70,3 +70,11 @@ h1 {
 .tile.ship.hit {
   background-color: red;
 }
+
+.tile.hover {
+  border: 2px solid black;
+}
+
+.message {
+  text-align: center;
+}

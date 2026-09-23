@@ -3,18 +3,23 @@ export const Ship = (len) => {
   const body = Array(len).fill(0);
   const getID = () => id;
   const getBody = () => body;
+  const restore = () => {
+    for (let i = 0; i < len; i++) body[i] = 0;
+  };
   const hit = (index) => {
     body[index] = 1;
   };
   const isSunk = () => body.every((value) => !!value);
-  return { getID, getBody, hit, isSunk };
+  return { getID, getBody, hit, isSunk, restore };
 };
 
 export const Gameboard = () => {
   const grid = Array.from({ length: 10 }, () => Array(10).fill(null));
-  const clear = () => {
+  const clear = (keepShips) => {
     for (let row = 0; row < 10; row++) {
       for (let col = 0; col < 10; col++) {
+        const value = getValue(row, col);
+        if (Array.isArray(value) && keepShips) continue;
         grid[row][col] = null;
       }
     }
@@ -151,17 +156,24 @@ export class LogicHandler {
   };
 
   generateShipPlacements = () => {
+    while (true)
+      try {
+        return this.#generateShipPlacements();
+      } catch (e) {
+        continue;
+      }
+  };
+
+  #generateShipPlacements = () => {
     const placements = [];
     const orientations = [];
     const positions = [];
 
     let board = Gameboard();
 
+    let attemps = 0;
     for (const len of [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]) {
       let orientation = ["V", "H"][Math.round(Math.random())];
-      if (len === 5)
-        if (orientations.every((o) => o === "H")) orientation = "V";
-        else if (orientations.every((o) => o === "V")) orientation = "H";
 
       let row, col;
       while (true) {
@@ -179,6 +191,8 @@ export class LogicHandler {
           board.placeShip(this.createShip(len), orientation, row, col);
         } catch (e) {
           orientation = orientation === "H" ? "V" : "H";
+          attemps++;
+          if (attemps > 500) throw Error("Caught in a loop");
           continue;
         }
 
@@ -204,7 +218,7 @@ export class LogicHandler {
 
   receiveAttack = (board, row, col) => {
     const feedback = board.receiveAttack(row, col);
-    if (!Array.isArray(feedback)) return;
+    if (!Array.isArray(feedback)) return -1;
     const [shipID, hurtIndex] = feedback;
     for (const ship of this.#ships) {
       if (ship.getID() != shipID) continue;
@@ -226,7 +240,7 @@ export class LogicHandler {
           }
 
           const H =
-            col + len <= 9 &&
+            col + len <= 10 &&
             Array.isArray(board.getValue(row, col + 1)) &&
             board.getValue(row, col + 1)[0] == shipID;
 
@@ -259,8 +273,19 @@ export class LogicHandler {
     }
   };
 
-  clearBoard = (board) => {
-    board.clear();
+  clearBoard = (board, keepShips = false) => {
+    for (const id of board.getShipIDs()) {
+      if (keepShips) {
+        for (const ship of this.#ships) {
+          if (ship.getID() !== id) continue;
+          ship.restore();
+        }
+      } else {
+        const index = this.#ships.indexOf(id);
+        this.#ships.slice(index, 1);
+      }
+    }
+    board.clear(keepShips);
   };
 
   isSpaceFree = (board, row, col) => {
@@ -272,5 +297,23 @@ export class LogicHandler {
       if (!this.getShipByID(id).isSunk()) return false;
     }
     return true;
+  };
+
+  getSurroundingTiles = (board, row, col) => {
+    const info = [];
+    for (let r = row - 1; r < row + 2; r++) {
+      if (r < 0 || r > 9) continue;
+      for (let c = col - 1; c < col + 2; c++) {
+        if (
+          (r === row && c === col) ||
+          c < 0 ||
+          c > 9 ||
+          !this.canAttack(board, r, c)
+        )
+          continue;
+        info.push([r, c]);
+      }
+    }
+    return info;
   };
 }
